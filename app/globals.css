@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0f0614;
+  --foreground: #e8e0f0;
+  --muted: rgba(232, 224, 240, 0.65);
+  --card: rgba(25, 12, 38, 0.9);
+  --border-glow: rgba(147, 112, 219, 0.2);
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer {
+  animation: shimmer 2s infinite;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Screen reader only — mesmo padrão do explore.css antigo */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
