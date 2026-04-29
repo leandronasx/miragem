@@ -110,12 +110,14 @@ function ExploreGridCard({
   onOpen,
   onTagClick,
   onGenerateClick,
+  onOpenUploadModal,
   generateBusy,
 }: {
   item: MediaItem;
   onOpen: (item: MediaItem) => void;
   onTagClick: (tag: string) => void;
   onGenerateClick: (item: MediaItem) => void | Promise<void>;
+  onOpenUploadModal: (item: MediaItem) => void;
   generateBusy: boolean;
 }) {
   const itemIsNew = isNewItem(item);
@@ -177,7 +179,7 @@ function ExploreGridCard({
           onClick={(e) => {
             e.stopPropagation();
             if (item.type !== "video" || generateBusy) return;
-            void onGenerateClick(item);
+            onOpenUploadModal(item);
           }}
           className={
             itemIsNew
@@ -185,7 +187,7 @@ function ExploreGridCard({
               : "block w-full rounded-[10px] bg-gradient-to-br from-[#e91e8c] to-[#ff6b35] py-2 text-center text-[0.8rem] font-semibold text-white shadow-[0_4px_14px_rgba(233,30,140,0.35)] transition group-hover:-translate-y-px group-hover:shadow-[0_6px_20px_rgba(233,30,140,0.45)] disabled:opacity-50"
           }
         >
-          {generateBusy ? "…" : itemIsNew ? "Novo" : "Gerar"}
+          {generateBusy ? "…" : "Gerar"}
         </button>
       </div>
     </article>
@@ -364,25 +366,25 @@ export function MirageExploreClient({
   const handleGenerateForItem = useCallback(
     async (item: MediaItem) => {
       if (!isSupabaseConfigured()) return;
-      if (item.type !== "video") return;
-      
+
       setGeneratingId(item.id ?? null);
       try {
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        
+
         if (!user) {
           router.push(`/login?next=${encodeURIComponent(pathname)}`);
           return;
         }
 
-        // Inserir diretamente na tabela generations
+        // Gravar na tabela generations com o ID do vídeo e a URL do Cloudflare
         const { data: inserted, error } = await supabase
           .from('generations' as any)
           .insert({
             user_id: user.id,
-            video_id: item.id,
+            video_id: item.id ?? null,
+            source_url: item.absoluteVideoUrl ?? null,
             status: 'pendente',
           })
           .select('id')
@@ -394,11 +396,11 @@ export function MirageExploreClient({
           return;
         }
 
-        console.log('Geração criada:', inserted);
+        console.log('Geração criada com sucesso:', inserted);
 
         // Redirecionar para /minha-geracao
         router.push('/minha-geracao');
-        
+
       } catch (err) {
         console.error('Erro no fluxo de geração:', err);
         alert('Erro ao solicitar geração. Tente novamente.');
@@ -975,6 +977,11 @@ export function MirageExploreClient({
                 onOpen={setModalItem}
                 onTagClick={onCardTagClick}
                 onGenerateClick={handleGenerateForItem}
+                onOpenUploadModal={(item) => {
+                  setSelectedModel(item);
+                  setImageFile(null);
+                  setUploadModalOpen(true);
+                }}
                 generateBusy={generatingId === item.id}
               />
             ))
