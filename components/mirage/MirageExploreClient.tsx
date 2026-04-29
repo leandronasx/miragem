@@ -34,8 +34,8 @@ import {
 } from "react";
 import { useInView } from "react-intersection-observer";
 
-/** Página inicial `/`: mais itens visíveis por “página” de scroll; vídeos Supabase vêm num único fetch. */
-const BATCH_HOME = 15;
+/** Página inicial `/`: sem paginação visual — exibe todos os vídeos carregados. */
+const BATCH_HOME = 200;
 /** `/explore`: 10 vídeos por pedido ao Supabase + scroll infinito. */
 const BATCH_EXPLORE_DB = 10;
 
@@ -627,8 +627,13 @@ export function MirageExploreClient({
   );
 
   useEffect(() => {
-    setVisibleCount(Math.min(sliceBatch, Math.max(filtered.length, 0)));
-  }, [filtered, sliceBatch]);
+    if (!explorePagination) {
+      // Home: exibe todos os vídeos carregados, sem paginação visual
+      setVisibleCount(Math.max(filtered.length, 0));
+    } else {
+      setVisibleCount(Math.min(sliceBatch, Math.max(filtered.length, 0)));
+    }
+  }, [filtered, sliceBatch, explorePagination]);
 
   const displayed = useMemo(
     () => filtered.slice(0, visibleCount),
