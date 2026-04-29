@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { LoaderCircle, ArrowLeft, Download, Play } from "lucide-react";
 import Link from "next/link";
@@ -20,7 +20,7 @@ interface GenerationSession {
   thumbnail_url?: string;
 }
 
-export default function MinhaGeracaoPage() {
+function MinhaGeracaoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session');
@@ -316,5 +316,23 @@ export default function MinhaGeracaoPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function MinhaGeracaoPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0614] via-[#1a0a24] to-[#120818] flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative mb-4">
+            <LoaderCircle className="h-12 w-12 animate-spin text-violet-400 mx-auto" />
+            <div className="absolute inset-0 h-12 w-12 animate-ping bg-violet-400/20 rounded-full" />
+          </div>
+          <p className="text-zinc-300">Carregando...</p>
+        </div>
+      </div>
+    }>
+      <MinhaGeracaoContent />
+    </Suspense>
   );
 }
