@@ -366,6 +366,7 @@ export function MirageExploreClient({
       if (!isSupabaseConfigured()) return;
       if (item.type !== "video") return;
       
+      setGeneratingId(item.id ?? null);
       try {
         const {
           data: { user },
@@ -376,33 +377,33 @@ export function MirageExploreClient({
           return;
         }
 
-        // Chamar RPC process_video_generation
-        const { data, error } = await supabase.rpc('process_video_generation' as any, {
-          p_user_id: user.id,
-          p_video_id: item.id,
-          p_diamond_cost: 50
-        });
+        // Inserir diretamente na tabela generations
+        const { data: inserted, error } = await supabase
+          .from('generations' as any)
+          .insert({
+            user_id: user.id,
+            video_id: item.id,
+            status: 'pendente',
+          })
+          .select('id')
+          .single();
 
         if (error) {
-          console.error('Erro ao processar geração:', error);
-          alert('Erro ao processar geração. Tente novamente.');
+          console.error('Erro ao criar geração:', error);
+          alert('Erro ao solicitar geração. Tente novamente.');
           return;
         }
 
-        const responseData = data as any[];
-        if (!responseData || !responseData[0]?.success) {
-          console.error('Resposta inválida da RPC:', responseData);
-          alert('Erro ao processar geração. Tente novamente.');
-          return;
-        }
+        console.log('Geração criada:', inserted);
 
-        // Redirecionar para /minha-geracao?session=${id}
-        const sessionId = responseData[0].session_id || responseData[0].id;
-        router.push(`/minha-geracao?session=${sessionId}`);
+        // Redirecionar para /minha-geracao
+        router.push('/minha-geracao');
         
       } catch (err) {
         console.error('Erro no fluxo de geração:', err);
-        alert('Erro ao processar geração. Tente novamente.');
+        alert('Erro ao solicitar geração. Tente novamente.');
+      } finally {
+        setGeneratingId(null);
       }
     },
     [router, pathname],
