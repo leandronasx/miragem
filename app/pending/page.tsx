@@ -1,18 +1,16 @@
-import Link from "next/link";
+import { Suspense } from "react";
+import { PendingClient } from "./PendingClient";
 
 export default function PendingPage() {
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
-      <h1 className="text-xl font-semibold">Pagamento pendente</h1>
-      <p className="text-sm text-[var(--muted)]">
-        Aguarda a confirmação. Podes voltar mais tarde à carteira.
-      </p>
-      <Link
-        href="/carteira"
-        className="text-sm font-medium text-[var(--accent)] underline"
-      >
-        Ir para a carteira
-      </Link>
-    </div>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#0f0614] pt-24 text-center text-sm text-[var(--muted)]">
+          Carregando…
+        </div>
+      }
+    >
+      <PendingClient />
+    </Suspense>
   );
 }
